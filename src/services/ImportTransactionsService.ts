@@ -13,6 +13,7 @@ interface Request {
 
 class ImportTransactionsService {
   async execute({ file }: Request): Promise<Transaction[]> {
+    const CSVTransactions: Transaction[] = [];
     const transactions: Transaction[] = [];
     const transactionRepository = getCustomRepository(TransactionsRepository);
     const categoryRepository = getCustomRepository(CategoryRepository);
@@ -47,22 +48,23 @@ class ImportTransactionsService {
       transaction.value = lineObj[2];
       transaction.category = lineObj[3];
 
-      transactions.push(transaction);
+      CSVTransactions.push(transaction);
     });
 
-    transactions.forEach(async (transaction: Transaction) => {
-
-      await categoryRepository.createOrFindCategory({
+    for (const transaction of CSVTransactions) {
+      let categoryEntity = await categoryRepository.createOrFindCategory({
         category: transaction.category,
-      })
+      });
 
-      // return await transactionRepository.save({
-      //   title: transaction.title,
-      //   value: transaction.value,
-      //   type: transaction.type,
-      //   category_id: categoryEntity.id,
-      // });
-    });
+      transactions.push(
+        await transactionRepository.save({
+          title: transaction.title,
+          value: transaction.value,
+          type: transaction.type,
+          category_id: categoryEntity.id,
+        }),
+      );
+    }
 
     return transactions;
   }
