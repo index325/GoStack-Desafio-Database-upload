@@ -1,13 +1,13 @@
 import AppError from '../errors/AppError';
-import { getRepository, getCustomRepository } from 'typeorm';
+import { getCustomRepository } from 'typeorm';
 import CategoryRepository from '../repositories/CategoryRepository';
+import TransactionsRepository from '../repositories/TransactionsRepository';
 import Transaction from '../models/Transaction';
-import Category from '../models/Category';
 
 interface Request {
   title: string;
   value: number;
-  type: string;
+  type: 'income' | 'outcome';
   category: string;
 }
 
@@ -18,13 +18,29 @@ class CreateTransactionService {
     type,
     category,
   }: Request): Promise<Transaction> {
-    const transactionRepository = getRepository(Transaction);
+    const transactionRepository = getCustomRepository(TransactionsRepository);
     const categoryRepository = getCustomRepository(CategoryRepository);
 
-    categoryRepository.createOrFindCategory({ category });
-    transactionRepository.save({
-      
+    const categoryEntity = await categoryRepository.createOrFindCategory({
+      category,
     });
+
+    const transactions = await transactionRepository.find();
+
+    const balance = await transactionRepository.getBalance(transactions);
+
+    if (type === 'outcome' && balance.total < value) {
+      throw new AppError('Value exceeding the balance');
+    }
+
+    const transaction = await transactionRepository.save({
+      title,
+      value,
+      type,
+      category_id: categoryEntity.id,
+    });
+
+    return transaction;
   }
 }
 

@@ -1,27 +1,27 @@
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, Repository, getManager } from 'typeorm';
 
 import Category from '../models/Category';
 
 interface Request {
-  title: string;
+  category: string;
 }
 
 @EntityRepository(Category)
 class CategoryRepository extends Repository<Category> {
-  public async createOrFindCategory({ title }: Request): Promise<Category> {
+  public async createOrFindCategory({ category }: Request): Promise<Category> {
     const categoryAlreadyExists = await this.findOne({
-      where: { title },
+      where: { title: category },
     });
 
     if (categoryAlreadyExists) {
       return categoryAlreadyExists;
     }
 
-    const category = await this.save({
-      title,
+    const categoryEntity = await this.save({
+      title: category,
     });
 
-    return category;
+    return categoryEntity;
   }
 }
 

@@ -24,6 +24,11 @@ export class CreateTransactions1593298859085 implements MigrationInterface {
             isNullable: false,
           },
           {
+            name: 'value',
+            type: 'integer',
+            isNullable: false,
+          },
+          {
             name: 'type',
             type: 'varchar',
             isNullable: false,
