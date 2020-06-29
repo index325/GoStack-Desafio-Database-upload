@@ -49,13 +49,13 @@ transactionsRouter.delete('/:id', async (request, response) => {
 
 transactionsRouter.post(
   '/import',
-  upload.single('csv'),
+  upload.single('file'),
   async (request, response) => {
     const importTransactionsService = new ImportTransactionsService();
     const transactionsRepository = getCustomRepository(TransactionsRepository);
 
     const transactions = await importTransactionsService.execute({
-      csv: request.file.filename,
+      file: request.file.filename,
     });
 
     const balance = await transactionsRepository.getBalance(transactions);

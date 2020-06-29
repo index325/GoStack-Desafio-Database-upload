@@ -17,11 +17,11 @@ class CategoryRepository extends Repository<Category> {
       return categoryAlreadyExists;
     }
 
-    const categoryEntity = await this.save({
-      title: category,
-    });
+    const newCategory = await this.create({ title: category });
 
-    return categoryEntity;
+    await this.save(newCategory);
+
+    return newCategory;
   }
 }
 

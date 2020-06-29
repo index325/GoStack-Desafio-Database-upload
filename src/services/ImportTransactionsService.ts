@@ -8,21 +8,17 @@ import CategoryRepository from '../repositories/CategoryRepository';
 import TransactionsRepository from '../repositories/TransactionsRepository';
 
 interface Request {
-  csv: string;
-}
-
-interface CSVLine {
-  title: string;
+  file: string;
 }
 
 class ImportTransactionsService {
-  async execute({ csv }: Request): Promise<Transaction[]> {
+  async execute({ file }: Request): Promise<Transaction[]> {
     const transactions: Transaction[] = [];
     const transactionRepository = getCustomRepository(TransactionsRepository);
     const categoryRepository = getCustomRepository(CategoryRepository);
 
     const readCSVStream = fs.createReadStream(
-      path.join(uploadConfig.directory, csv),
+      path.join(uploadConfig.directory, file),
     );
 
     const parseStream = csvParse({
@@ -54,10 +50,11 @@ class ImportTransactionsService {
       transactions.push(transaction);
     });
 
-    transactions.map(async (transaction: Transaction) => {
-      const categoryEntity = await categoryRepository.createOrFindCategory({
+    transactions.forEach(async (transaction: Transaction) => {
+
+      await categoryRepository.createOrFindCategory({
         category: transaction.category,
-      });
+      })
 
       // return await transactionRepository.save({
       //   title: transaction.title,
