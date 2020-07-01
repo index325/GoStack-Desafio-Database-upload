@@ -15,6 +15,7 @@ class ImportTransactionsService {
   async execute({ file }: Request): Promise<Transaction[]> {
     const CSVTransactions: Transaction[] = [];
     const transactions: Transaction[] = [];
+    const transactionList: Transaction[] = [];
     const transactionRepository = getCustomRepository(TransactionsRepository);
     const categoryRepository = getCustomRepository(CategoryRepository);
 
@@ -53,7 +54,7 @@ class ImportTransactionsService {
 
     for (const transaction of CSVTransactions) {
       let categoryEntity = await categoryRepository.createOrFindCategory({
-        category: transaction.category,
+        category: String(transaction.category),
       });
 
       transactions.push(
@@ -66,7 +67,12 @@ class ImportTransactionsService {
       );
     }
 
-    return transactions;
+    for (const transaction of transactions) {
+      let t = await transactionRepository.findOne(transaction.id);
+      if (t) transactionList.push(t);
+    }
+
+    return transactionList;
   }
 }
 
